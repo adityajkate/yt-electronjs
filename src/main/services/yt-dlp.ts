@@ -97,6 +97,27 @@ export function getStreamOutputPath(videoId: string, outputDir: string): string 
   return path.join(outputDir, `${videoId}.m4a`)
 }
 
+function cleanYtTitle(title: string): { title: string; artist?: string } {
+  // Remove common YouTube suffixes
+  let cleaned = title
+    .replace(/\s*\(Official\s+(Video|Audio|Music\s*Video|Lyrics?|Visualizer|MV|4K|HD)\)/gi, '')
+    .replace(/\s*\(Lyrics?\)/gi, '')
+    .replace(/\s*\(Audio\)/gi, '')
+    .replace(/\s*\(feat\..*?\)/gi, '')
+    .replace(/\s*\(Ft\..*?\)/gi, '')
+    .replace(/\[Official\s+(Video|Audio|Music\s*Video|Lyrics?|Visualizer|MV)\]/gi, '')
+    .replace(/\s*\|.*$/, '')
+    .trim()
+
+  // If title is "Artist - Song name" format, extract artist
+  const artistMatch = cleaned.match(/^([^-]+)\s*-\s*(.+)/)
+  if (artistMatch) {
+    return { artist: artistMatch[1].trim(), title: artistMatch[2].trim() }
+  }
+
+  return { title: cleaned }
+}
+
 export async function searchYoutube(query: string, maxResults = 10): Promise<Track[]> {
   const binaryPath = getBinaryPath()
   const searchQuery = `ytsearch${maxResults}:${query}`
@@ -122,10 +143,17 @@ export async function searchYoutube(query: string, maxResults = 10): Promise<Tra
       const tracks: Track[] = stdout.trim().split('\n').filter(Boolean).map((line) => {
         try {
           const item = JSON.parse(line)
+          const channel = item.channel || item.uploader || ''
+          const { title: cleanTitle, artist: extractedArtist } = cleanYtTitle(item.title || '')
+
+          // Prefer the artist extracted from "Artist - Song" title format
+          // Otherwise fall back to channel name
+          const artist = extractedArtist || channel || 'Unknown'
+
           return {
             id: item.id,
-            title: item.title || 'Unknown',
-            artist: item.channel || item.uploader || 'Unknown',
+            title: cleanTitle,
+            artist,
             duration: item.duration || 0,
             thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`,
             albumArt: `https://i.ytimg.com/vi/${item.id}/maxresdefault.jpg`,

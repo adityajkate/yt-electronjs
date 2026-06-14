@@ -24,7 +24,7 @@ function parseLrc(lrc: string): LyricLine[] {
       const min = parseInt(match[1], 10)
       const sec = parseInt(match[2], 10)
       let ms = parseInt(match[3], 10)
-      if (match[3].length === 2) ms *= 10 // handle centiseconds
+      if (match[3].length === 2) ms *= 10
       const time = min * 60 + sec + ms / 1000
       const text = match[4].trim()
       if (text) lines.push({ time: Math.round(time * 100) / 100, text })
@@ -33,25 +33,66 @@ function parseLrc(lrc: string): LyricLine[] {
   return lines
 }
 
+function cleanTitle(title: string): string {
+  // Remove common YouTube suffixes: (Official Video), (Lyrics), (Audio), etc.
+  return title
+    .replace(/\s*\(Official\s+(Video|Audio|Music\s*Video|Lyrics?|Visualizer|MV)\)/gi, '')
+    .replace(/\s*\(Lyrics?\)/gi, '')
+    .replace(/\s*\(Audio\)/gi, '')
+    .replace(/\s*\(feat\..*?\)/gi, '')
+    .replace(/\s*\(Ft\..*?\)/gi, '')
+    .replace(/\[Official\s+(Video|Audio|Music\s*Video|Lyrics?|Visualizer|MV)\]/gi, '')
+    .replace(/\s*\|.*$/, '')
+    .trim()
+}
+
+// Simple Levenshtein-like similarity: picks the best match from search results
+function titleSimilarity(a: string, b: string): number {
+  const aClean = cleanTitle(a).toLowerCase()
+  const bClean = cleanTitle(b).toLowerCase()
+  if (aClean === bClean) return 1
+  if (aClean.includes(bClean) || bClean.includes(aClean)) return 0.8
+  // Count matching words
+  const aWords = aClean.split(/\s+/)
+  const bWords = bClean.split(/\s+/)
+  const common = aWords.filter(w => bWords.includes(w)).length
+  return common / Math.max(aWords.length, bWords.length)
+}
+
 export async function searchLyrics(artist: string, title: string): Promise<LyricsResult | null> {
   try {
+    // First try exact search via /search (fuzzy matching)
     const encodedArtist = encodeURIComponent(artist)
-    const encodedTitle = encodeURIComponent(title)
-    const data = await fetchFromLRCLIB(`/get?artist_name=${encodedArtist}&track_name=${encodedTitle}`)
+    const encodedTitle = encodeURIComponent(cleanTitle(title) || title)
+    const data = await fetchFromLRCLIB(`/search?artist_name=${encodedArtist}&track_name=${encodedTitle}`)
 
     if (!data) return null
 
+    // /search returns an array — find best match
+    const results = Array.isArray(data) ? data : [data]
+    if (results.length === 0) return null
+
+    // Score each result by title similarity and pick the best
+    const scored = results.map((r: any) => ({
+      result: r,
+      score: titleSimilarity(title, r.trackName || r.name || ''),
+    }))
+    scored.sort((a: any, b: any) => b.score - a.score)
+    const best = scored[0]
+
+    // If even the best match is terrible, bail
+    if (best.score < 0.3) return null
+
+    const match = best.result
+
     // Check for synced lyrics first
-    if (data.syncedLyrics) {
-      return { synced: parseLrc(data.syncedLyrics), plain: data.plainLyrics || undefined }
+    if (match.syncedLyrics) {
+      return { synced: parseLrc(match.syncedLyrics), plain: match.plainLyrics || undefined }
     }
 
     // Fall back to plain lyrics
-    if (data.plainLyrics) {
-      return {
-        synced: [],
-        plain: data.plainLyrics,
-      }
+    if (match.plainLyrics) {
+      return { synced: [], plain: match.plainLyrics }
     }
 
     return null
