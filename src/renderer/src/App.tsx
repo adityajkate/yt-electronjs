@@ -1,6 +1,6 @@
 // src/renderer/src/App.tsx
 import { useEffect, useState } from 'react'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import type { ViewName } from '@shared/types'
 import TitleBar from './components/TitleBar'
 import Sidebar from './components/Sidebar'
@@ -14,8 +14,8 @@ import DownloadsView from './pages/DownloadsView'
 import SettingsView from './pages/SettingsView'
 import ToastContainer from './components/ToastContainer'
 import { loadSettingsAtom } from './stores/settings'
-import { useAtomValue } from 'jotai'
 import { playerAtom, nextTrackAtom, prevTrackAtom } from './stores/player'
+import useAudio from './hooks/useAudio'
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewName>('now-playing')
@@ -28,10 +28,12 @@ export default function App() {
     loadSettings()
   }, [])
 
+  // Single persistent audio engine — lives at App root, survives view changes
+  useAudio()
+
   // Global keyboard shortcuts (active on all views)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         if (e.key === 'Escape') (e.target as HTMLElement).blur()
         return
@@ -40,18 +42,15 @@ export default function App() {
       switch (e.key) {
         case ' ':
           e.preventDefault()
-          // Dispatch custom event for useAudio to handle
           window.dispatchEvent(new CustomEvent('toggle-play'))
           break
         case 'ArrowLeft':
           e.preventDefault()
-          const seekL = Math.max(0, player.currentTime - 5)
-          window.dispatchEvent(new CustomEvent('audio-seek', { detail: seekL }))
+          window.dispatchEvent(new CustomEvent('audio-seek', { detail: Math.max(0, player.currentTime - 5) }))
           break
         case 'ArrowRight':
           e.preventDefault()
-          const seekR = Math.min(player.duration, player.currentTime + 5)
-          window.dispatchEvent(new CustomEvent('audio-seek', { detail: seekR }))
+          window.dispatchEvent(new CustomEvent('audio-seek', { detail: Math.min(player.duration, player.currentTime + 5) }))
           break
         case 'ArrowUp':
           e.preventDefault()
@@ -61,35 +60,15 @@ export default function App() {
           e.preventDefault()
           window.dispatchEvent(new CustomEvent('audio-volume', { detail: Math.max(0, player.volume - 0.1) }))
           break
-        case 'n':
-        case 'N':
-          next()
+        case 'n': case 'N': next(); break
+        case 'p': case 'P': prev(); break
+        case 'm': case 'M':
+          window.dispatchEvent(new CustomEvent('audio-volume', { detail: player.volume > 0 ? 0 : 0.8 }))
           break
-        case 'p':
-        case 'P':
-          prev()
-          break
-        case 'm':
-        case 'M':
-          const mv = player.volume > 0 ? 0 : 0.8
-          window.dispatchEvent(new CustomEvent('audio-volume', { detail: mv }))
-          break
-        case 's':
-        case 'S':
-          setCurrentView('search')
-          break
-        case 'l':
-        case 'L':
-          window.dispatchEvent(new CustomEvent('toggle-lyrics'))
-          break
-        case 'f':
-        case 'F':
-          // Fullscreen is handled by Electron natively (F11), but provide it
-          document.documentElement.requestFullscreen?.().catch(() => {})
-          break
-        case '/':
-          setCurrentView('search')
-          break
+        case 's': case 'S': setCurrentView('search'); break
+        case 'l': case 'L': window.dispatchEvent(new CustomEvent('toggle-lyrics')); break
+        case 'f': case 'F': document.documentElement.requestFullscreen?.().catch(() => {}); break
+        case '/': setCurrentView('search'); break
       }
     }
 
@@ -113,6 +92,12 @@ export default function App() {
   return (
     <ErrorBoundary>
       <div className="h-screen w-screen flex flex-col bg-canvas overflow-hidden">
+        {/*
+          Hidden audio element — lives at App root so it persists across all views.
+          Created once, destroyed once (when the app closes).
+        */}
+        <audio id="app-audio" preload="auto" />
+
         <OfflineBanner />
         <TitleBar currentView={currentView} onSearch={handleSearch} />
         <div className="flex flex-1 overflow-hidden">

@@ -3,12 +3,10 @@ import { useAtom } from 'jotai'
 import { currentTrackAtom } from '../stores/player'
 import LyricsPanel from '../components/LyricsPanel'
 import { IconMusic } from '../components/icons'
-import useAudio from '../hooks/useAudio'
 
 export default function NowPlayingView() {
   const [track] = useAtom(currentTrackAtom)
   const [showLyrics, setShowLyrics] = useState(false)
-  useAudio()
 
   // Listen for toggle-lyrics event from global shortcut or bottom bar
   useEffect(() => {

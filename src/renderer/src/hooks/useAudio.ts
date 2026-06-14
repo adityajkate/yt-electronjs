@@ -3,22 +3,21 @@ import { useAtom } from 'jotai'
 import { playerAtom, currentTrackAtom, nextTrackAtom } from '../stores/player'
 import { addToastAtom } from '../stores/toast'
 
+function getAudio(): HTMLAudioElement | null {
+  return document.getElementById('app-audio') as HTMLAudioElement | null
+}
+
 export default function useAudio() {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [player, setPlayer] = useAtom(playerAtom)
   const [track] = useAtom(currentTrackAtom)
   const [, next] = useAtom(nextTrackAtom)
   const [, addToast] = useAtom(addToastAtom)
   const pendingFetchRef = useRef<AbortController | null>(null)
 
-  // Create audio element once
+  // Set up event listeners — runs once, uses the persistent DOM <audio>
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio()
-      audioRef.current.preload = 'auto'
-    }
-
-    const audio = audioRef.current
+    const audio = getAudio()
+    if (!audio) return
 
     const handleTimeUpdate = () => {
       setPlayer((prev) => ({ ...prev, currentTime: audio.currentTime, duration: audio.duration || prev.duration }))
@@ -37,6 +36,7 @@ export default function useAudio() {
       audio.volume = vol
       setPlayer((prev) => ({ ...prev, volume: vol }))
     }
+
     const handleSource = (e: Event) => {
       const detail = (e as CustomEvent).detail
       if (detail.isLocal) {
@@ -45,6 +45,7 @@ export default function useAudio() {
         setPlayer((prev) => ({ ...prev, status: 'playing' }))
       }
     }
+
     const handleTogglePlay = () => {
       if (audio.paused && audio.src) {
         audio.play().catch(() => {})
@@ -77,7 +78,7 @@ export default function useAudio() {
 
   // Load new stream when track changes
   useEffect(() => {
-    const audio = audioRef.current
+    const audio = getAudio()
     if (!audio || !track) return
 
     if (player.status === 'loading') {
@@ -85,6 +86,11 @@ export default function useAudio() {
       pendingFetchRef.current?.abort()
       const controller = new AbortController()
       pendingFetchRef.current = controller
+
+      // Fully stop previous playback before loading new track
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
 
       const api = (window as any).electronAPI
       if (!api) return
@@ -109,13 +115,15 @@ export default function useAudio() {
     }
   }, [track?.id, player.status])
 
-  // Handle play/pause
+  // Sync play/pause state — but ONLY when not loading (avoids racing with track change)
   useEffect(() => {
-    const audio = audioRef.current
+    const audio = getAudio()
     if (!audio || !track) return
 
+    // Skip if we're currently loading a new track — the loading effect handles play()
+    if (player.status === 'loading') return
+
     if (player.status === 'playing') {
-      // Only play if not already playing (avoid race)
       if (audio.paused && audio.src) {
         audio.play().catch(() => {})
       }
@@ -126,10 +134,9 @@ export default function useAudio() {
     }
   }, [player.status])
 
-  // Handle volume changes
+  // Sync volume
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = player.volume
-    }
+    const audio = getAudio()
+    if (audio) audio.volume = player.volume
   }, [player.volume])
 }
