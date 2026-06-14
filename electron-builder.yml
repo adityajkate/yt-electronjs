@@ -1,0 +1,39 @@
+appId: com.ytmusicelectron.app
+productName: YouTube Music Electron
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+  - "!node_modules/**/*"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icons/icon.ico
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: resources/icons/icon.icns
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  icon: resources/icons/
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+extraResources:
+  - from: resources/yt-dlp/
+    to: yt-dlp/
+    filter:
+      - "**/*"
+publish:
+  provider: github
+  owner: your-github-username
+  repo: youtube-music-electron

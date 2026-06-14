@@ -1,0 +1,111 @@
+/* src/renderer/src/styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-canvas: #F7F6F3;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #F9F9F8;
+    --color-border: #EAEAEA;
+    --color-text-primary: #2F3437;
+    --color-text-secondary: #787774;
+    --color-text-muted: #B0B0A8;
+    --color-accent-red-bg: #FDEBEC;
+    --color-accent-red-text: #9F2F2D;
+    --color-accent-blue-bg: #E1F3FE;
+    --color-accent-blue-text: #1F6C9F;
+    --color-accent-green-bg: #EDF3EC;
+    --color-accent-green-text: #346538;
+    --color-accent-yellow-bg: #FBF3DB;
+    --color-accent-yellow-text: #956400;
+  }
+
+  .dark {
+    --color-canvas: #1A1A1A;
+    --color-surface: #2A2A2A;
+    --color-surface-hover: #323232;
+    --color-border: #3A3A3A;
+    --color-text-primary: #E0E0E0;
+    --color-text-secondary: #A0A0A0;
+    --color-text-muted: #707070;
+    --color-accent-red-bg: #4A2020;
+    --color-accent-red-text: #FFB3B3;
+    --color-accent-blue-bg: #1A2A40;
+    --color-accent-blue-text: #99CCFF;
+    --color-accent-green-bg: #1A2A1A;
+    --color-accent-green-text: #99FF99;
+    --color-accent-yellow-bg: #3A3020;
+    --color-accent-yellow-text: #FFD699;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'SF Pro Display', 'Geist Sans', 'Helvetica Neue', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #D0D0C8;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B0B0A0;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #505050;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #606060;
+  }
+}
+
+@layer components {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Fade-in-up animation for staggered reveals */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out both;
+  }
+}

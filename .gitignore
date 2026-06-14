@@ -1,0 +1,7 @@
+node_modules/
+out/
+dist/
+resources/yt-dlp/
+.DS_Store
+thumbs.db
+*.log
