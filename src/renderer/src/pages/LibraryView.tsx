@@ -63,7 +63,7 @@ export default function LibraryView() {
             placeholder="Playlist name..." autoFocus
             className="flex-1 px-3 py-1.5 text-sm font-sans bg-surface/80 border border-border rounded-[6px] text-text-primary placeholder:text-text-muted outline-none focus:border-text-muted/50 transition-all"
             onKeyDown={(e) => e.key === 'Enter' && handleCreatePlaylist()} />
-          <button onClick={handleCreatePlaylist} className="btn-primary text-xs">Create</button>
+          <button onClick={handleCreatePlaylist} className="btn-solid text-xs">Create</button>
           <button onClick={() => setShowNewPlaylist(false)} className="btn-ghost text-xs">Cancel</button>
         </div>
       )}

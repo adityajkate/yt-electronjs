@@ -10,7 +10,7 @@ interface TrackCardProps {
 }
 
 export default function TrackCard({ track, onPlay, onDownload, isDownloaded, isDownloading }: TrackCardProps) {
-  const formatDuration = (s: number): string => {
+  const fmt = (s: number): string => {
     const m = Math.floor(s / 60)
     const sec = Math.floor(s % 60)
     return `${m}:${sec.toString().padStart(2, '0')}`
@@ -18,7 +18,7 @@ export default function TrackCard({ track, onPlay, onDownload, isDownloaded, isD
 
   return (
     <div className="track-row group" onClick={() => onPlay(track)}>
-      <div className="w-11 h-11 rounded-[6px] overflow-hidden bg-surface-hover shrink-0 border border-border/50 shadow-card">
+      <div className="w-11 h-11 rounded-[8px] overflow-hidden bg-surface-hover shrink-0 depth-1">
         {track.thumbnail ? (
           <img src={track.thumbnail} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -28,16 +28,16 @@ export default function TrackCard({ track, onPlay, onDownload, isDownloaded, isD
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-text-primary truncate font-sans font-medium leading-snug">{track.title}</p>
-        <p className="text-xs text-text-secondary truncate font-sans leading-relaxed">{track.artist}</p>
+        <p className="text-sm text-text-primary truncate font-medium leading-snug">{track.title}</p>
+        <p className="text-xs text-text-secondary truncate leading-relaxed">{track.artist}</p>
       </div>
-      <span className="text-xs text-text-muted font-mono tabular-nums">{formatDuration(track.duration)}</span>
+      <span className="text-xs text-text-muted font-mono tabular-nums">{fmt(track.duration)}</span>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
         {onDownload && (
           <button
             onClick={(e) => { e.stopPropagation(); onDownload(track) }}
             disabled={isDownloaded || isDownloading}
-            className={`p-1.5 rounded-[4px] transition-all active:scale-90 ${
+            className={`w-7 h-7 flex items-center justify-center rounded-[4px] transition-all active:scale-90 ${
               isDownloaded
                 ? 'text-accent-green-text bg-accent-green-bg'
                 : isDownloading

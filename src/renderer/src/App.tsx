@@ -91,10 +91,10 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="h-screen w-screen flex flex-col overflow-hidden relative">
+      <div className="h-screen w-screen flex flex-col overflow-hidden relative bg-canvas">
         {/* Ambient glow orbs */}
-        <div className="glow-orbit top-[-10%] right-[-5%] w-[400px] h-[400px] bg-accent-yellow-text/5 dark:bg-accent-yellow-text/3" />
-        <div className="glow-orbit bottom-[-15%] left-[-8%] w-[500px] h-[500px] bg-accent-blue-text/5 dark:bg-accent-blue-text/3" />
+        <div className="glow-orb top-[-8%] right-[-4%] w-[450px] h-[450px] bg-accent-yellow-text/6 dark:bg-accent-yellow-text/4" />
+        <div className="glow-orb bottom-[-12%] left-[-6%] w-[500px] h-[500px] bg-accent-blue-text/5 dark:bg-accent-blue-text/3" style={{ animationDelay: '-4s' }} />
 
         {/*
           Hidden audio element — lives at App root so it persists across all views.
