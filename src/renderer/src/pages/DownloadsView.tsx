@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useAtom } from 'jotai'
 import { downloadsAtom, downloadingSetAtom, refreshDownloadsAtom } from '../stores/downloads'
-import { playTrackAtom } from '../stores/player'
+import { playerAtom } from '../stores/player'
 import { addToastAtom } from '../stores/toast'
 import TrackCard from '../components/TrackCard'
 import { IconDownload } from '../components/icons'
@@ -10,7 +10,7 @@ export default function DownloadsView() {
   const [downloads] = useAtom(downloadsAtom)
   const [downloading] = useAtom(downloadingSetAtom)
   const [, refresh] = useAtom(refreshDownloadsAtom)
-  const [, playTrack] = useAtom(playTrackAtom)
+  const [, setPlayer] = useAtom(playerAtom)
   const [, addToast] = useAtom(addToastAtom)
 
   useEffect(() => { refresh() }, [])
@@ -28,7 +28,16 @@ export default function DownloadsView() {
     try {
       const dl = downloads.find((d) => d.track_id === trackId)
       if (!dl) return
-      playTrack({ id: dl.track_id, title: dl.title, artist: dl.artist, duration: 0, thumbnail: dl.thumbnail || '' })
+
+      // Set track info but skip live stream load — we'll play from local file
+      setPlayer((prev) => ({
+        ...prev,
+        queue: [{ id: dl.track_id, title: dl.title, artist: dl.artist, duration: 0, thumbnail: dl.thumbnail || '' }],
+        currentIndex: 0,
+        status: 'idle', // Don't trigger loading — we send audio-source directly
+      }))
+
+      // Get local streaming URL and dispatch directly to audio
       const result = await api.playDownloaded(trackId)
       window.dispatchEvent(new CustomEvent('audio-source', { detail: { url: result.url, isLocal: true } }))
     } catch (err: any) {

@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai'
-import { playerAtom, currentTrackAtom } from '../stores/player'
+import { playerAtom, currentTrackAtom, nextTrackAtom, prevTrackAtom } from '../stores/player'
 import ProgressBar from './ProgressBar'
 import VolumeSlider from './VolumeSlider'
 import { IconPlay, IconPause, IconSkipPrev, IconSkipNext, IconLyrics } from './icons'
@@ -11,6 +11,8 @@ declare global {
 export default function BottomBar() {
   const [player, setPlayer] = useAtom(playerAtom)
   const [track] = useAtom(currentTrackAtom)
+  const [, next] = useAtom(nextTrackAtom)
+  const [, prev] = useAtom(prevTrackAtom)
 
   const handlePlayPause = () => {
     if (player.status === 'playing') {
@@ -34,6 +36,10 @@ export default function BottomBar() {
     const newVol = player.volume > 0 ? 0 : 0.8
     setPlayer({ ...player, volume: newVol })
     window.dispatchEvent(new CustomEvent('audio-volume', { detail: newVol }))
+  }
+
+  const handleToggleLyrics = () => {
+    window.dispatchEvent(new CustomEvent('toggle-lyrics'))
   }
 
   if (!track) {
@@ -62,21 +68,22 @@ export default function BottomBar() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="text-text-muted hover:text-text-primary transition-colors active:scale-95">
+          <button onClick={() => prev()} className="text-text-muted hover:text-text-primary transition-colors active:scale-95" title="Previous track">
             <IconSkipPrev size={18} />
           </button>
           <button
             onClick={handlePlayPause}
             className="w-9 h-9 flex items-center justify-center bg-text-primary text-canvas rounded-card hover:opacity-90 transition-all active:scale-95"
+            title={player.status === 'playing' ? 'Pause' : 'Play'}
           >
             {player.status === 'playing' ? <IconPause size={18} /> : <IconPlay size={18} />}
           </button>
-          <button className="text-text-muted hover:text-text-primary transition-colors active:scale-95">
+          <button onClick={() => next()} className="text-text-muted hover:text-text-primary transition-colors active:scale-95" title="Next track">
             <IconSkipNext size={18} />
           </button>
         </div>
         <div className="flex items-center gap-3 flex-1 justify-end">
-          <button className="text-text-muted hover:text-text-primary transition-colors active:scale-95" title="Show lyrics">
+          <button onClick={handleToggleLyrics} className="text-text-muted hover:text-text-primary transition-colors active:scale-95" title="Toggle lyrics">
             <IconLyrics size={18} />
           </button>
           <VolumeSlider volume={player.volume} muted={player.volume === 0} onVolumeChange={handleVolumeChange} onToggleMute={handleToggleMute} />

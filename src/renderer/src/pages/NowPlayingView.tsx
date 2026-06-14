@@ -1,16 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAtom } from 'jotai'
 import { currentTrackAtom } from '../stores/player'
 import LyricsPanel from '../components/LyricsPanel'
 import { IconMusic } from '../components/icons'
 import useAudio from '../hooks/useAudio'
-import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
 
 export default function NowPlayingView() {
   const [track] = useAtom(currentTrackAtom)
   const [showLyrics, setShowLyrics] = useState(false)
   useAudio()
-  useKeyboardShortcuts()
+
+  // Listen for toggle-lyrics event from global shortcut or bottom bar
+  useEffect(() => {
+    const handler = () => setShowLyrics((v) => !v)
+    window.addEventListener('toggle-lyrics', handler)
+    return () => window.removeEventListener('toggle-lyrics', handler)
+  }, [])
 
   if (!track) {
     return (

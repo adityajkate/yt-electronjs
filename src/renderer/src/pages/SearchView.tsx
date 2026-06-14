@@ -16,24 +16,39 @@ export default function SearchView({ onPlay }: SearchViewProps) {
   const [, playTrack] = useAtom(playTrackAtom)
   const [, addToast] = useAtom(addToastAtom)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const mountedRef = useRef(true)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { inputRef.current?.focus() }, [])
+  useEffect(() => {
+    mountedRef.current = true
+    inputRef.current?.focus()
+    return () => {
+      mountedRef.current = false
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
 
   const doSearch = useCallback(async (q: string) => {
-    if (!q.trim()) { setResults([]); setError(null); return }
-    setLoading(true)
+    if (!q.trim()) {
+      if (mountedRef.current) { setResults([]); setError(null) }
+      return
+    }
+    if (mountedRef.current) setLoading(true)
     setError(null)
     try {
       const api = (window as any).electronAPI
       if (!api) throw new Error('API not available')
       const result = await api.search(q)
+      if (!mountedRef.current) return
       setResults(result.tracks || [])
       if (result.tracks?.length === 0) setError('No results found')
     } catch (err: any) {
+      if (!mountedRef.current) return
       setError(err.message || 'Search failed')
       addToast({ message: 'Search failed — trying again...', type: 'error' })
-    } finally { setLoading(false) }
+    } finally {
+      if (mountedRef.current) setLoading(false)
+    }
   }, [addToast])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,9 +66,9 @@ export default function SearchView({ onPlay }: SearchViewProps) {
     try {
       addToast({ message: `Downloading ${track.title}...`, type: 'info' })
       await api.download({ id: track.id, title: track.title, artist: track.artist, duration: track.duration, thumbnail: track.thumbnail })
-      addToast({ message: `Downloaded ${track.title}`, type: 'success' })
+      if (mountedRef.current) addToast({ message: `Downloaded ${track.title}`, type: 'success' })
     } catch (err: any) {
-      addToast({ message: `Download failed: ${err.message}`, type: 'error' })
+      if (mountedRef.current) addToast({ message: `Download failed: ${err.message}`, type: 'error' })
     }
   }
 

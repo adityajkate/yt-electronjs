@@ -1,4 +1,3 @@
-// src/main/ipc/settings.ts
 import { ipcMain } from 'electron'
 import { IPC_CHANNELS, AppSettings } from '../../shared/types'
 import { getSetting, setSetting } from '../database/database'
@@ -18,7 +17,9 @@ function loadSettings(): AppSettings {
   if (stored) {
     try {
       return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) }
-    } catch { /* fall through */ }
+    } catch {
+      console.warn('Settings data corrupted, resetting to defaults')
+    }
   }
   return { ...DEFAULT_SETTINGS }
 }
