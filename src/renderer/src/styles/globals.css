@@ -77,6 +77,15 @@
   .dark ::-webkit-scrollbar-thumb:hover {
     background: #606060;
   }
+
+  /* Frameless window dragging — required for frameless Electron windows */
+  .window-drag {
+    -webkit-app-region: drag;
+  }
+
+  .window-no-drag {
+    -webkit-app-region: no-drag;
+  }
 }
 
 @layer components {
