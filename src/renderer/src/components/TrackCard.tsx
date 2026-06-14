@@ -17,30 +17,27 @@ export default function TrackCard({ track, onPlay, onDownload, isDownloaded, isD
   }
 
   return (
-    <div
-      className="group flex items-center gap-3 p-3 rounded-card hover:bg-surface-hover border border-transparent hover:border-border transition-all duration-200 cursor-pointer active:scale-[0.99]"
-      onClick={() => onPlay(track)}
-    >
-      <div className="w-12 h-12 rounded overflow-hidden bg-surface-hover shrink-0 border border-border">
+    <div className="track-row group" onClick={() => onPlay(track)}>
+      <div className="w-11 h-11 rounded-[6px] overflow-hidden bg-surface-hover shrink-0 border border-border/50 shadow-card">
         {track.thumbnail ? (
           <img src={track.thumbnail} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-text-muted">
-            <IconMusic size={16} />
+            <IconMusic size={15} />
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-text-primary truncate font-sans">{track.title}</p>
-        <p className="text-xs text-text-secondary truncate font-sans">{track.artist}</p>
+        <p className="text-sm text-text-primary truncate font-sans font-medium leading-snug">{track.title}</p>
+        <p className="text-xs text-text-secondary truncate font-sans leading-relaxed">{track.artist}</p>
       </div>
-      <span className="text-xs text-text-muted font-mono">{formatDuration(track.duration)}</span>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <span className="text-xs text-text-muted font-mono tabular-nums">{formatDuration(track.duration)}</span>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
         {onDownload && (
           <button
             onClick={(e) => { e.stopPropagation(); onDownload(track) }}
             disabled={isDownloaded || isDownloading}
-            className={`p-1.5 rounded transition-colors active:scale-90 ${
+            className={`p-1.5 rounded-[4px] transition-all active:scale-90 ${
               isDownloaded
                 ? 'text-accent-green-text bg-accent-green-bg'
                 : isDownloading

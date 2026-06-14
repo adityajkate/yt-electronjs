@@ -22,26 +22,14 @@ export default function ProgressBar({ currentTime, duration, onSeek }: ProgressB
   }
 
   return (
-    <div className="flex items-center gap-3 w-full">
-      <span className="text-xs text-text-muted font-mono w-8 text-right tabular-nums">
-        {formatTime(currentTime)}
-      </span>
-      <div
-        className="flex-1 h-1 bg-border rounded-full cursor-pointer relative group"
-        onClick={handleClick}
-      >
-        <div
-          className="h-full bg-text-muted rounded-full transition-all"
-          style={{ width: `${Math.min(progress, 100)}%` }}
-        />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-text-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ left: `calc(${Math.min(progress, 100)}% - 5px)` }}
-        />
+    <div className="flex items-center gap-2.5 w-full">
+      <span className="text-[10px] text-text-muted font-mono w-8 text-right tabular-nums leading-none">{formatTime(currentTime)}</span>
+      <div className="flex-1 h-[3px] bg-border/70 rounded-full cursor-pointer relative group" onClick={handleClick}>
+        <div className="h-full bg-text-muted rounded-full transition-all duration-100" style={{ width: `${Math.min(progress, 100)}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-text-primary rounded-full opacity-0 group-hover:opacity-100 transition-all duration-150 shadow-sm"
+          style={{ left: `calc(${Math.min(progress, 100)}% - 5px)` }} />
       </div>
-      <span className="text-xs text-text-muted font-mono w-8 tabular-nums">
-        {formatTime(duration)}
-      </span>
+      <span className="text-[10px] text-text-muted font-mono w-8 tabular-nums leading-none">{formatTime(duration)}</span>
     </div>
   )
 }

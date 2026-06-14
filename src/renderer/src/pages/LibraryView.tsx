@@ -37,8 +37,8 @@ export default function LibraryView() {
     <div>
       {favorites.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">Favorites</h2>
-          <div className="space-y-1">
+          <h2 className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-muted mb-4">Favorites</h2>
+          <div className="space-y-0.5">
             {favorites.map((fav: any) => (
               <TrackCard
                 key={fav.track_id}
@@ -51,9 +51,9 @@ export default function LibraryView() {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted">Playlists</h2>
-        <button onClick={() => setShowNewPlaylist(true)} className="flex items-center gap-1 text-xs text-text-muted hover:text-text-primary transition-colors">
-          <IconAdd size={14} /> New
+        <h2 className="text-[10px] font-mono uppercase tracking-[0.15em] text-text-muted">Playlists</h2>
+        <button onClick={() => setShowNewPlaylist(true)} className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+          <IconAdd size={13} /> New
         </button>
       </div>
 
@@ -61,31 +61,32 @@ export default function LibraryView() {
         <div className="flex items-center gap-2 mb-4">
           <input type="text" value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)}
             placeholder="Playlist name..." autoFocus
-            className="flex-1 px-3 py-1.5 text-sm font-sans bg-surface border border-border rounded-card text-text-primary placeholder:text-text-muted outline-none"
+            className="flex-1 px-3 py-1.5 text-sm font-sans bg-surface/80 border border-border rounded-[6px] text-text-primary placeholder:text-text-muted outline-none focus:border-text-muted/50 transition-all"
             onKeyDown={(e) => e.key === 'Enter' && handleCreatePlaylist()} />
-          <button onClick={handleCreatePlaylist} className="text-xs text-text-primary bg-surface border border-border px-3 py-1.5 rounded-card active:scale-95 transition-transform">Create</button>
-          <button onClick={() => setShowNewPlaylist(false)} className="text-xs text-text-muted px-2 py-1.5">Cancel</button>
+          <button onClick={handleCreatePlaylist} className="btn-primary text-xs">Create</button>
+          <button onClick={() => setShowNewPlaylist(false)} className="btn-ghost text-xs">Cancel</button>
         </div>
       )}
 
       {playlists.length === 0 && favorites.length === 0 && (
         <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-card bg-surface-hover border border-border flex items-center justify-center mx-auto mb-4">
-            <IconLibrary size={24} className="text-text-muted" />
+          <div className="w-14 h-14 rounded-[14px] bg-surface/60 border border-border flex items-center justify-center mx-auto mb-4 shadow-card">
+            <IconLibrary size={22} className="text-text-muted" />
           </div>
-          <p className="text-sm text-text-muted font-sans">Your library is empty. Save songs to playlists or mark them as favorites.</p>
+          <p className="text-sm text-text-muted font-sans">Your library is empty</p>
+          <p className="text-xs text-text-secondary font-sans mt-1">Save songs to playlists or mark as favorites</p>
         </div>
       )}
 
       {playlists.length > 0 && (
         <div className="space-y-2">
           {playlists.map((pl) => (
-            <div key={pl.id} className="p-4 bg-surface border border-border rounded-card transition-shadow hover:shadow-card-hover">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm text-text-primary font-medium">{pl.name}</h3>
+            <div key={pl.id} className="p-4 bg-surface/60 border border-border rounded-[8px] transition-all duration-200 hover:shadow-card-hover">
+              <div className="flex items-center justify-between mb-1.5">
+                <h3 className="text-sm text-text-primary font-medium tracking-tight">{pl.name}</h3>
                 <button onClick={() => handleDeletePlaylist(pl.id, pl.name)} className="text-xs text-text-muted hover:text-accent-red-text transition-colors">Delete</button>
               </div>
-              {pl.description && <p className="text-xs text-text-secondary mb-2">{pl.description}</p>}
+              {pl.description && <p className="text-xs text-text-secondary mb-1.5">{pl.description}</p>}
               <p className="text-xs text-text-muted">{pl.tracks?.length || 0} tracks</p>
             </div>
           ))}

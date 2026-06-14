@@ -16,26 +16,30 @@ const NAV_ITEMS: { id: ViewName; label: string; icon: React.ElementType }[] = [
 
 export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
   return (
-    <nav className="w-sidebar flex flex-col items-center pt-3 pb-2 bg-canvas border-r border-border shrink-0">
+    <nav className="w-sidebar flex flex-col items-center pt-3 pb-3 bg-canvas/80 border-r border-border shrink-0 relative z-[2]">
+      {/* Sidebar top spacer with subtle app mark */}
+      <div className="mb-6 mt-1 w-8 h-8 rounded-lg bg-text-primary/5 flex items-center justify-center">
+        <span className="text-xs font-mono text-text-muted font-semibold tracking-widest">Y</span>
+      </div>
+
       {NAV_ITEMS.map((item) => {
         const isActive = currentView === item.id
         const Icon = item.icon
         return (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            title={item.label}
-            className={`relative w-10 h-10 flex items-center justify-center rounded-card mb-1 transition-all duration-200
-              ${isActive
-                ? 'bg-surface text-text-primary shadow-card'
-                : 'text-text-muted hover:text-text-secondary hover:bg-surface-hover'
-              } active:scale-95`}
-          >
-            <Icon size={20} />
-            {isActive && (
-              <span className="absolute -left-2.5 w-1 h-1 rounded-full bg-text-muted" />
-            )}
-          </button>
+          <div key={item.id} className="relative group">
+            <button
+              onClick={() => onNavigate(item.id)}
+              title={item.label}
+              className={`nav-item ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={20} />
+            </button>
+            {/* Tooltip label on hover */}
+            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-md text-xs font-sans whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none
+              glass shadow-glass -translate-x-1 group-hover:translate-x-0">
+              {item.label}
+            </div>
+          </div>
         )
       })}
     </nav>

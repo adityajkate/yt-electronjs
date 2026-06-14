@@ -91,7 +91,11 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="h-screen w-screen flex flex-col bg-canvas overflow-hidden">
+      <div className="h-screen w-screen flex flex-col overflow-hidden relative">
+        {/* Ambient glow orbs */}
+        <div className="glow-orbit top-[-10%] right-[-5%] w-[400px] h-[400px] bg-accent-yellow-text/5 dark:bg-accent-yellow-text/3" />
+        <div className="glow-orbit bottom-[-15%] left-[-8%] w-[500px] h-[500px] bg-accent-blue-text/5 dark:bg-accent-blue-text/3" />
+
         {/*
           Hidden audio element — lives at App root so it persists across all views.
           Created once, destroyed once (when the app closes).
@@ -100,9 +104,9 @@ export default function App() {
 
         <OfflineBanner />
         <TitleBar currentView={currentView} onSearch={handleSearch} />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden relative z-[1]">
           <Sidebar currentView={currentView} onNavigate={setCurrentView} />
-          <main className="flex-1 overflow-y-auto px-6 py-6">
+          <main className="flex-1 overflow-y-auto px-8 py-8">
             {renderView()}
           </main>
         </div>

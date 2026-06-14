@@ -17,7 +17,7 @@ export default function OfflineBanner() {
   if (!offline) return null
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-accent-yellow-bg text-accent-yellow-text text-xs text-center py-1.5 font-mono tracking-wider animate-fade-in">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-accent-yellow-bg text-accent-yellow-text text-[10px] text-center py-1.5 font-mono tracking-[0.1em] animate-fade-in">
       Offline — showing cached content
     </div>
   )

@@ -13,6 +13,7 @@ export default {
         'text-primary': 'var(--color-text-primary)',
         'text-secondary': 'var(--color-text-secondary)',
         'text-muted': 'var(--color-text-muted)',
+        glow: 'var(--color-glow)',
         'accent-red': { bg: 'var(--color-accent-red-bg)', text: 'var(--color-accent-red-text)' },
         'accent-blue': { bg: 'var(--color-accent-blue-bg)', text: 'var(--color-accent-blue-text)' },
         'accent-green': { bg: 'var(--color-accent-green-bg)', text: 'var(--color-accent-green-text)' },
@@ -25,20 +26,29 @@ export default {
       },
       borderRadius: {
         'card': '8px',
+        'lg': '12px',
       },
       spacing: {
         'titlebar': '36px',
-        'sidebar': '64px',
-        'bottombar': '72px',
+        'sidebar': '56px',
+        'bottombar': '80px',
       },
       boxShadow: {
         'card': '0 0 0 1px var(--color-border)',
-        'card-hover': '0 2px 8px rgba(0,0,0,0.08)',
-        'btn': '0 0 0 1px var(--color-border)',
+        'card-hover': '0 4px 20px rgba(0,0,0,0.06)',
+        'glass': '0 0 0 1px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.04)',
+        'elevated': '0 8px 32px rgba(0,0,0,0.08)',
       },
       maxWidth: {
         'content': '42rem',
-      }
+      },
+      letterSpacing: {
+        'tightest': '-0.04em',
+        'tighter': '-0.02em',
+        'wide': '0.02em',
+        'wider': '0.05em',
+        'widest': '0.1em',
+      },
     },
   },
   plugins: [],
