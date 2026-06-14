@@ -1,18 +1,37 @@
 // src/main/services/lrclib.ts
+import https from 'https'
 import type { LyricsResult, LyricLine } from '../../shared/types'
 
-const LRCLIB_BASE = 'https://lrclib.net/api'
+const LRCLIB_BASE = 'lrclib.net'
 
-async function fetchFromLRCLIB(path: string): Promise<any> {
-  const response = await fetch(`${LRCLIB_BASE}${path}`, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(5000),
+function httpsGet(path: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const req = https.get(
+      {
+        hostname: LRCLIB_BASE,
+        path,
+        headers: { Accept: 'application/json' },
+        timeout: 8000,
+      },
+      (res) => {
+        let data = ''
+        res.on('data', (chunk: Buffer) => { data += chunk.toString() })
+        res.on('end', () => {
+          if (res.statusCode === 404) return resolve(null)
+          if (res.statusCode && res.statusCode >= 400) {
+            return reject(new Error(`LRCLIB HTTP ${res.statusCode}`))
+          }
+          try {
+            resolve(JSON.parse(data))
+          } catch {
+            reject(new Error('Invalid JSON from LRCLIB'))
+          }
+        })
+      }
+    )
+    req.on('error', reject)
+    req.on('timeout', () => { req.destroy(); reject(new Error('LRCLIB timeout')) })
   })
-  if (!response.ok) {
-    if (response.status === 404) return null
-    throw new Error(`LRCLIB HTTP ${response.status}`)
-  }
-  return response.json()
 }
 
 function parseLrc(lrc: string): LyricLine[] {
@@ -34,7 +53,6 @@ function parseLrc(lrc: string): LyricLine[] {
 }
 
 function cleanTitle(title: string): string {
-  // Remove common YouTube suffixes: (Official Video), (Lyrics), (Audio), etc.
   return title
     .replace(/\s*\(Official\s+(Video|Audio|Music\s*Video|Lyrics?|Visualizer|MV)\)/gi, '')
     .replace(/\s*\(Lyrics?\)/gi, '')
@@ -46,33 +64,28 @@ function cleanTitle(title: string): string {
     .trim()
 }
 
-// Simple Levenshtein-like similarity: picks the best match from search results
 function titleSimilarity(a: string, b: string): number {
   const aClean = cleanTitle(a).toLowerCase()
   const bClean = cleanTitle(b).toLowerCase()
   if (aClean === bClean) return 1
   if (aClean.includes(bClean) || bClean.includes(aClean)) return 0.8
-  // Count matching words
   const aWords = aClean.split(/\s+/)
   const bWords = bClean.split(/\s+/)
-  const common = aWords.filter(w => bWords.includes(w)).length
+  const common = aWords.filter((w) => bWords.includes(w)).length
   return common / Math.max(aWords.length, bWords.length)
 }
 
 export async function searchLyrics(artist: string, title: string): Promise<LyricsResult | null> {
   try {
-    // First try exact search via /search (fuzzy matching)
     const encodedArtist = encodeURIComponent(artist)
     const encodedTitle = encodeURIComponent(cleanTitle(title) || title)
-    const data = await fetchFromLRCLIB(`/search?artist_name=${encodedArtist}&track_name=${encodedTitle}`)
+    const data = await httpsGet(`/api/search?artist_name=${encodedArtist}&track_name=${encodedTitle}`)
 
     if (!data) return null
 
-    // /search returns an array — find best match
     const results = Array.isArray(data) ? data : [data]
     if (results.length === 0) return null
 
-    // Score each result by title similarity and pick the best
     const scored = results.map((r: any) => ({
       result: r,
       score: titleSimilarity(title, r.trackName || r.name || ''),
@@ -80,23 +93,20 @@ export async function searchLyrics(artist: string, title: string): Promise<Lyric
     scored.sort((a: any, b: any) => b.score - a.score)
     const best = scored[0]
 
-    // If even the best match is terrible, bail
     if (best.score < 0.3) return null
 
     const match = best.result
 
-    // Check for synced lyrics first
     if (match.syncedLyrics) {
       return { synced: parseLrc(match.syncedLyrics), plain: match.plainLyrics || undefined }
     }
 
-    // Fall back to plain lyrics
     if (match.plainLyrics) {
       return { synced: [], plain: match.plainLyrics }
     }
 
     return null
   } catch {
-    return null // fail silently — lyrics are non-critical
+    return null
   }
 }
